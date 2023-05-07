@@ -137,7 +137,7 @@ mod last {
     impl<
             F: super::super::CallableWithFixedArguments,
             A: ProvideArgument<ProvideArgumentType = <F::FixedArgumentTypes as ArgumentTypes>::Last>,
-        > crate::callback::IsCallable for LastArgumentProvided<F, A>
+        > crate::IsCallable for LastArgumentProvided<F, A>
     {
     }
 
@@ -147,7 +147,7 @@ mod last {
             F: super::super::CallableWithFixedArguments<Output = Out>,
             A: ProvideArgument<ProvideArgumentType = <F::FixedArgumentTypes as ArgumentTypes>::Last>,
         >
-        crate::callback::Callable<
+        crate::Callable<
             ArgumentsOfTypes<'_, <F::FixedArgumentTypes as ArgumentTypes>::LastTrimmed>,
         > for LastArgumentProvided<F, A>
     {
@@ -166,7 +166,7 @@ mod last {
             Out,
             F: super::super::CallableWithFixedArguments<Output = Out>,
             A: ProvideArgument<ProvideArgumentType = <F::FixedArgumentTypes as ArgumentTypes>::Last>,
-        > crate::callback::CallableWithFixedArguments for LastArgumentProvided<F, A>
+        > crate::CallableWithFixedArguments for LastArgumentProvided<F, A>
     {
         type FixedArgumentTypes = <F::FixedArgumentTypes as ArgumentTypes>::LastTrimmed;
     }

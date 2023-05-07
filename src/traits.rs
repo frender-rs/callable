@@ -137,7 +137,7 @@ pub trait IsCallable {
 /// ```
 ///
 /// ```
-/// # use frender_events::{Callback, callback::HkFn};
+/// # use frender_events::{Callback, HkFn};
 /// # fn assert<IN, Out>() where
 /// HkFn<fn(&IN) -> Out> : for<'input> Callback<&'input IN, Output = Out>
 /// # {} assert::<String, usize>()
@@ -198,7 +198,7 @@ pub trait Callback<IN>: Callable<(IN,)> {
 
 impl<A1, F: Callable<(A1,)>> crate::Callback<A1> for F {}
 
-pub trait Callable<Args: sealed::Tuple>: crate::callback::IsCallable {
+pub trait Callable<Args: sealed::Tuple>: crate::IsCallable {
     type Output;
 
     fn call_fn(&self, args: Args) -> Self::Output;

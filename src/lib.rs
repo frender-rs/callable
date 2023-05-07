@@ -1,7 +1,7 @@
 //!
 //! ```
 //! # use frender_events::*;
-//! let callback = callback::r#ref(u8::clone).with_input_ref(8);
+//! let callback = crate::r#ref(u8::clone).with_input_ref(8);
 //! assert_eq!(callback.emit(()), 8u8);
 //! ```
 
@@ -16,8 +16,6 @@ pub mod argument;
 mod maybe_handle_event;
 pub use maybe_handle_event::*;
 
-use crate as callback;
-
 mod sealed {
     pub trait Tuple {}
 }
@@ -26,11 +24,9 @@ mod sealed {
 pub struct HkFn<F>(F);
 
 #[cfg(feature = "impl_with_macro_rules")]
-mod imp_macros;
-
-#[cfg(feature = "impl_with_macro_rules")]
 mod imp {
-    super::imp_macros::impl_with_macro_rules!(a1: A1, a2: A2, a3: A3);
+    mod macros;
+    macros::impl_with_macro_rules!(a1: A1, a2: A2, a3: A3);
 }
 
 #[cfg(not(feature = "impl_with_macro_rules"))]
@@ -47,13 +43,13 @@ macro_rules! ArgumentTypes {
         $resolved
     };
     ($(@($($resolved:tt)*))? &mut $t:ty $(, $($rest:tt)*)? ) => {
-        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::callback::argument::ByMut<$t>,) $($rest)* }
+        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::argument::ByMut<$t>,) $($rest)* }
     };
     ($(@($($resolved:tt)*))? &    $t:ty $(, $($rest:tt)*)? ) => {
-        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::callback::argument::ByRef<$t>,) $($rest)* }
+        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::argument::ByRef<$t>,) $($rest)* }
     };
     ($(@($($resolved:tt)*))?      $t:ty $(, $($rest:tt)*)? ) => {
-        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::callback::argument::Value<$t>,) $($rest)* }
+        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::argument::Value<$t>,) $($rest)* }
     };
 }
 
@@ -70,7 +66,7 @@ mod tests {
             t
         }
 
-        let cbk = asserts(crate::callback::r#ref(Clone::clone));
+        let cbk = asserts(crate::r#ref(Clone::clone));
         assert_eq!(cbk.emit(&0), 0);
         assert_eq!(cbk.provide_last_argument_refed(8).call_fn(()), 8);
     }
@@ -80,20 +76,18 @@ mod tests {
         use super::callback;
         let _: fn() = callback(|| {});
 
-        let _: fn(()) = callback::value(|()| {});
-        let _: callback::HkFn<fn(&())> = callback::r#ref(|&()| {});
-        let _: callback::HkFn<fn(&mut ())> = callback::r#mut(|&mut ()| {});
+        let _: fn(()) = crate::value(|()| {});
+        let _: crate::HkFn<fn(&())> = crate::r#ref(|&()| {});
+        let _: crate::HkFn<fn(&mut ())> = crate::r#mut(|&mut ()| {});
 
-        let _: fn((), ()) = callback::value::value(|(), ()| {});
-        let _: callback::value::HkFn<fn((), &())> = callback::value::r#ref(|(), &()| {});
+        let _: fn((), ()) = crate::value::value(|(), ()| {});
+        let _: crate::value::HkFn<fn((), &())> = crate::value::r#ref(|(), &()| {});
     }
 }
 
 pub fn callback<Out>(f: fn() -> Out) -> fn() -> Out {
     f
 }
-
-pub use callback::{Callable, Callback, IsCallable};
 
 #[doc(hidden)]
 #[macro_export]

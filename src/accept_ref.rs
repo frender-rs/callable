@@ -22,13 +22,13 @@ use super::{Callback, IsCallback};
 /// Compiles:
 ///
 /// ```
-/// # fn assert<IN: ?Sized, Out>() where frender_events::callback::
+/// # fn assert<IN: ?Sized, Out>() where frender_events::crate::
 /// HkFn<fn(&IN) -> Out> : PartialEq
 /// # {} assert::<str, usize>();
 /// ```
 ///
 /// ```
-/// # fn assert<IN: ?Sized, Out>() where frender_events::callback::
+/// # fn assert<IN: ?Sized, Out>() where frender_events::crate::
 /// HkFn<fn(&IN) -> Out> : Eq
 /// # {} assert::<str, usize>();
 /// ```
@@ -48,7 +48,7 @@ use super::{Callback, IsCallback};
 ///
 /// ```
 /// # use frender_events::Callback;
-/// # fn assert<IN: ?Sized, Out>() where frender_events::callback::
+/// # fn assert<IN: ?Sized, Out>() where frender_events::crate::
 /// HkFn<fn(&IN) -> Out> : for<'input> Callback<&'input IN, Output = Out>
 /// # {} assert::<str, usize>();
 /// ```
