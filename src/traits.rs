@@ -130,14 +130,14 @@ pub trait IsCallable {
 /// ## Notable implementors:
 ///
 /// ```
-/// # use frender_events::CallableOne;
+/// # use callable::CallableOne;
 /// # fn assert<IN, Out>() where
 /// fn(IN) -> Out : CallableOne<IN, Output = Out>
 /// # {} assert::<String, usize>()
 /// ```
 ///
 /// ```
-/// # use frender_events::{CallableOne, HkFn};
+/// # use callable::{CallableOne, HkFn};
 /// # fn assert<IN, Out>() where
 /// HkFn<fn(&IN) -> Out> : for<'input> CallableOne<&'input IN, Output = Out>
 /// # {} assert::<String, usize>()
@@ -162,7 +162,7 @@ pub trait CallableOne<IN>: Callable<(IN,)> {
     /// Provide input with another callable.
     ///
     /// ```
-    /// # use frender_events::{callable, CallableOne, CallableOneExt};
+    /// # use callable::{callable, CallableOne, CallableOneExt};
     /// let plus_1 = callable(|v: i32| v + 1);
     /// let plus_2 = plus_1.reform(plus_1);
     /// let plus_4 = plus_2.reform(callable(|v| v + 2));

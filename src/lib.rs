@@ -1,6 +1,6 @@
 //!
 //! ```
-//! # use frender_events::*;
+//! # use callable::*;
 //! let callable = crate::r#ref(u8::clone).with_input_ref(8);
 //! assert_eq!(callable.emit(()), 8u8);
 //! ```
