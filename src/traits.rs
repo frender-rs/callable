@@ -110,14 +110,14 @@ pub trait IsCallable {
     }
 }
 
-/// Anything implementing Callback has the following traits:
+/// Anything implementing CallableOne has the following traits:
 ///
 /// - Clone-able: impl [`Clone`]
 /// - Comparable: impl [`PartialEq`]
-/// - Marked as callback: impl [`IsCallback`]
-/// - Callable: impl [`Callback<IN>`],
-///   which has associated type [`Output`](Callback::Output)
-///   and method [`emit()`](Callback::emit).
+/// - Marked as callable: impl [`IsCallableOne`]
+/// - Callable: impl [`CallableOne<IN>`],
+///   which has associated type [`Output`](CallableOne::Output)
+///   and method [`emit()`](CallableOne::emit).
 ///
 /// ## Why not closures?
 ///
@@ -130,55 +130,55 @@ pub trait IsCallable {
 /// ## Notable implementors:
 ///
 /// ```
-/// # use frender_events::Callback;
+/// # use frender_events::CallableOne;
 /// # fn assert<IN, Out>() where
-/// fn(IN) -> Out : Callback<IN, Output = Out>
+/// fn(IN) -> Out : CallableOne<IN, Output = Out>
 /// # {} assert::<String, usize>()
 /// ```
 ///
 /// ```
-/// # use frender_events::{Callback, HkFn};
+/// # use frender_events::{CallableOne, HkFn};
 /// # fn assert<IN, Out>() where
-/// HkFn<fn(&IN) -> Out> : for<'input> Callback<&'input IN, Output = Out>
+/// HkFn<fn(&IN) -> Out> : for<'input> CallableOne<&'input IN, Output = Out>
 /// # {} assert::<String, usize>()
 /// ```
 ///
-/// Note that `fn(&IN) -> Out` doesn't implement `for<'input> Callback<&'input IN, Output = Out>`
+/// Note that `fn(&IN) -> Out` doesn't implement `for<'input> CallableOne<&'input IN, Output = Out>`
 /// due to limitations of higher kind types in rust.
-pub trait Callback<IN>: Callable<(IN,)> {
+pub trait CallableOne<IN>: Callable<(IN,)> {
     // type Output;
 
     fn emit(&self, input: IN) -> Self::Output {
         self.call_fn((input,))
     }
 
-    fn chain<F: Callback<Self::Output>>(self, f: F) -> chain::Chain<Self, F>
+    fn chain<F: CallableOne<Self::Output>>(self, f: F) -> chain::Chain<Self, F>
     where
         Self: Sized,
     {
         chain::Chain(self, f)
     }
 
-    /// Provide input with another callback.
+    /// Provide input with another callable.
     ///
     /// ```
-    /// # use frender_events::{callback, Callback, CallbackExt};
-    /// let plus_1 = callback(|v: i32| v + 1);
+    /// # use frender_events::{callable, CallableOne, CallableOneExt};
+    /// let plus_1 = callable(|v: i32| v + 1);
     /// let plus_2 = plus_1.reform(plus_1);
-    /// let plus_4 = plus_2.reform(callback(|v| v + 2));
+    /// let plus_4 = plus_2.reform(callable(|v| v + 2));
     ///
     /// assert_eq!(plus_1.emit(1), 2);
     /// assert_eq!(plus_2.emit(1), 3);
     /// assert_eq!(plus_4.emit(1), 5);
     /// ```
-    fn reform<NewInput, F: Callback<NewInput, Output = IN>>(self, f: F) -> chain::Chain<F, Self>
+    fn reform<NewInput, F: CallableOne<NewInput, Output = IN>>(self, f: F) -> chain::Chain<F, Self>
     where
         Self: Sized,
     {
         f.chain(self)
     }
 
-    fn reform_ref<NewInput, F: for<'i> Callback<&'i NewInput, Output = IN>>(
+    fn reform_ref<NewInput, F: for<'i> CallableOne<&'i NewInput, Output = IN>>(
         self,
         f: F,
     ) -> chain::Chain<F, Self>
@@ -188,7 +188,7 @@ pub trait Callback<IN>: Callable<(IN,)> {
         chain::Chain(f, self)
     }
 
-    // fn reform_mut<NewInput, F: for<'input> Callback<&'input mut NewInput, Output = IN>>(
+    // fn reform_mut<NewInput, F: for<'input> CallableOne<&'input mut NewInput, Output = IN>>(
     //     self,
     //     f: F,
     // ) -> Chain<F, Self> {
@@ -196,7 +196,7 @@ pub trait Callback<IN>: Callable<(IN,)> {
     // }
 }
 
-impl<A1, F: Callable<(A1,)>> crate::Callback<A1> for F {}
+impl<A1, F: Callable<(A1,)>> crate::CallableOne<A1> for F {}
 
 pub trait Callable<Args: sealed::Tuple>: crate::IsCallable {
     type Output;

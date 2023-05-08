@@ -1,4 +1,4 @@
-use super::{Callable, CallableWithFixedArguments, Callback, IsCallable};
+use super::{Callable, CallableWithFixedArguments, CallableOne, IsCallable};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Chain<F1, F2>(pub F1, pub F2);
