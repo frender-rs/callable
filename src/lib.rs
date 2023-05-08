@@ -55,7 +55,7 @@ macro_rules! ArgumentTypes {
 
 #[cfg(test)]
 mod tests {
-    use super::{Callable, Callback, IsCallable};
+    use crate::prelude::*;
 
     #[test]
     fn test_callback_ref() {
@@ -73,7 +73,6 @@ mod tests {
 
     #[test]
     fn mods() {
-        use super::callback;
         let _: fn() = callback(|| {});
 
         let _: fn(()) = crate::value(|()| {});
@@ -85,8 +84,16 @@ mod tests {
     }
 }
 
-pub fn callback<Out>(f: fn() -> Out) -> fn() -> Out {
-    f
+pub use prelude::callback as new;
+
+pub mod prelude {
+    pub use crate::{Callable, CallableWithFixedArguments, Callback, IsCallable};
+
+    pub use super::callback;
+    pub use crate as callback;
+    pub fn callback<Out>(f: fn() -> Out) -> fn() -> Out {
+        f
+    }
 }
 
 #[doc(hidden)]
