@@ -36,6 +36,22 @@ mod imp;
 
 pub use imp::*;
 
+/// ```
+/// # use callable::{ArgumentType, ArgumentTypes};
+/// # fn __(v:
+/// (ArgumentType![u8], ArgumentType![&str], ArgumentType![&mut Vec<u8>])
+/// # ) ->
+/// // is exactly the same as
+/// ArgumentTypes!(u8, &str, &mut Vec<u8>)
+/// # { v }
+/// ```
+#[macro_export]
+macro_rules! ArgumentType {
+    (&mut $t:ty) => { $crate::argument::ByMut<$t> };
+    (&    $t:ty) => { $crate::argument::ByRef<$t> };
+    (     $t:ty) => { $crate::argument::Value<$t> };
+}
+
 #[macro_export]
 macro_rules! ArgumentTypes {
     () => {

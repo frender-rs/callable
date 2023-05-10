@@ -28,8 +28,11 @@ pub trait ProvideArgument {
     ) -> Out;
 }
 
+/// Don't try to remember the name, use [`ArgumentType`](crate::ArgumentType) instead.
 pub struct Value<T>(PhantomData<T>, Invalid);
+/// Don't try to remember the name, use [`ArgumentType`](crate::ArgumentType) instead.
 pub struct ByRef<T: ?Sized>(PhantomData<T>, Invalid);
+/// Don't try to remember the name, use [`ArgumentType`](crate::ArgumentType) instead.
 pub struct ByMut<T: ?Sized>(PhantomData<T>, Invalid);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
