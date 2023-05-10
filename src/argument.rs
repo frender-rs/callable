@@ -6,7 +6,7 @@ pub use ByMut as r#mut;
 pub use ByRef as r#ref;
 pub use Value as value;
 
-pub trait Argument<'a>: 'static {
+pub trait Argument<'a, ImplicitBounds = &'a Self> {
     type Argument;
 }
 
@@ -42,37 +42,37 @@ pub struct Cloned<T: Clone>(pub(super) T);
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Refed<T>(pub(super) T);
 
-impl<'a, T: 'static> Argument<'a> for Value<T> {
+impl<'a, T> Argument<'a> for Value<T> {
     type Argument = T;
 }
 
-impl<T: 'static> ArgumentType for Value<T> {
+impl<T> ArgumentType for Value<T> {
     fn re_borrow<'a: 'b, 'b>(arg: ArgumentOfType<'a, Self>) -> ArgumentOfType<'b, Self> {
         arg
     }
 }
 
-impl<'a, T: ?Sized + 'static> Argument<'a> for ByRef<T> {
+impl<'a, T: ?Sized> Argument<'a> for ByRef<T> {
     type Argument = &'a T;
 }
 
-impl<T: ?Sized + 'static> ArgumentType for ByRef<T> {
+impl<T: ?Sized> ArgumentType for ByRef<T> {
     fn re_borrow<'a: 'b, 'b>(arg: ArgumentOfType<'a, Self>) -> ArgumentOfType<'b, Self> {
         arg
     }
 }
 
-impl<'a, T: ?Sized + 'static> Argument<'a> for ByMut<T> {
+impl<'a, T: ?Sized> Argument<'a> for ByMut<T> {
     type Argument = &'a mut T;
 }
 
-impl<T: ?Sized + 'static> ArgumentType for ByMut<T> {
+impl<T: ?Sized> ArgumentType for ByMut<T> {
     fn re_borrow<'a: 'b, 'b>(arg: ArgumentOfType<'a, Self>) -> ArgumentOfType<'b, Self> {
         arg
     }
 }
 
-impl<T: Copy + 'static> ProvideArgument for Copied<T> {
+impl<T: Copy> ProvideArgument for Copied<T> {
     type ProvideArgumentType = Value<T>;
 
     // fn provide_argument(&self) -> <Value<T> as ArgumentType<'_>>::Argument {
@@ -89,7 +89,7 @@ impl<T: Copy + 'static> ProvideArgument for Copied<T> {
         f(self.0)
     }
 }
-impl<T: Clone + 'static> ProvideArgument for Cloned<T> {
+impl<T: Clone> ProvideArgument for Cloned<T> {
     type ProvideArgumentType = Value<T>;
 
     // fn provide_argument(&self) -> <Value<T> as ArgumentType<'_>>::Argument {
@@ -107,7 +107,7 @@ impl<T: Clone + 'static> ProvideArgument for Cloned<T> {
     }
 }
 
-impl<T: 'static> ProvideArgument for Refed<T> {
+impl<T> ProvideArgument for Refed<T> {
     type ProvideArgumentType = ByRef<T>;
 
     // fn provide_argument(&self) -> &T {
@@ -223,7 +223,7 @@ mod first {
     }
 }
 
-pub trait Arguments<'a>: 'static {
+pub trait Arguments<'a, ImplicitBounds = &'a Self> {
     type Arguments: super::Tuple;
 }
 

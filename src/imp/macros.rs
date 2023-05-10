@@ -127,7 +127,7 @@ macro_rules! impl_fn {
                 self($($v),*)
             }
         }
-        impl<$($tp: 'static,)* Out> crate::CallableWithFixedArguments for fn($($tp),*) -> Out {
+        impl<$($tp,)* Out> crate::CallableWithFixedArguments for fn($($tp),*) -> Out {
             type FixedArgumentTypes = ($(crate::argument::Value<$tp>,)*);
         }
     };
@@ -187,7 +187,7 @@ macro_rules! impl_one_resolved {
             }
         }
 
-        impl<$($all_tp :'static $(+ $($all_tp_bounds)+)?,)* Out> crate::CallableWithFixedArguments for $fn_wrapped {
+        impl<$($all_tp $(: $($all_tp_bounds)+)?,)* Out> crate::CallableWithFixedArguments for $fn_wrapped {
             type FixedArgumentTypes   = ($(crate::imp::macros::argument_type![$($all_t)* $all_tp],)*);
         }
 
@@ -224,7 +224,7 @@ macro_rules! impl_one_resolved {
             crate::imp::macros::expand_if_ident_is_else! { r#ref $fn_name [
             mod provide_last_argument {
                 use super::super::HkFn;
-                pub fn provide_last_argument<$($bef_tp : 'static $(+ $($bef_tp_bounds)+)?,)* $cur_tp: 'static, Out>(
+                pub fn provide_last_argument<$($bef_tp $(: $($bef_tp_bounds)+)?,)* $cur_tp, Out>(
                     f: $fn_type,
                     arg: $cur_tp,
                 ) -> crate::argument::LastArgumentProvided<

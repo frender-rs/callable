@@ -66,7 +66,7 @@ pub trait IsCallable {
         }
     }
 
-    fn provide_last_argument_refed<T: 'static>(
+    fn provide_last_argument_refed<T>(
         self,
         last_argument: T,
     ) -> super::argument::LastArgumentProvided<Self, argument::Refed<T>>
@@ -80,7 +80,7 @@ pub trait IsCallable {
         }
     }
 
-    fn provide_first_argument_refed<T: 'static>(
+    fn provide_first_argument_refed<T>(
         self,
         first_argument: T,
     ) -> super::argument::FirstArgumentProvided<Self, argument::Refed<T>>
@@ -94,7 +94,7 @@ pub trait IsCallable {
         }
     }
 
-    fn provide_first_argument_copied<T: Copy + 'static>(
+    fn provide_first_argument_copied<T: Copy>(
         self,
         first_argument: T,
     ) -> super::argument::FirstArgumentProvided<Self, argument::Copied<T>>
@@ -105,7 +105,7 @@ pub trait IsCallable {
         self.provide_first_argument(argument::Copied(first_argument))
     }
 
-    fn provide_last_argument_copied<T: Copy + 'static>(
+    fn provide_last_argument_copied<T: Copy>(
         self,
         last_argument: T,
     ) -> super::argument::LastArgumentProvided<Self, argument::Copied<T>>
@@ -119,7 +119,7 @@ pub trait IsCallable {
         }
     }
 
-    fn provide_last_argument_cloned<T: Clone + 'static>(
+    fn provide_last_argument_cloned<T: Clone>(
         self,
         last_argument: T,
     ) -> super::argument::LastArgumentProvided<Self, argument::Cloned<T>>
