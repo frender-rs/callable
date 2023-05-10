@@ -1,4 +1,4 @@
-use super::{Callable, CallableWithFixedArguments, CallableOne, IsCallable};
+use super::{Callable, CallableOne, CallableWithFixedArguments, IsCallable};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Chain<F1, F2>(pub F1, pub F2);
@@ -14,7 +14,7 @@ impl<
     type FixedArgumentTypes = F1::FixedArgumentTypes;
 }
 
-impl<Args: super::sealed::Tuple, F1, F2> Callable<Args> for Chain<F1, F2>
+impl<Args: super::Tuple, F1, F2> Callable<Args> for Chain<F1, F2>
 where
     F1: Callable<Args>,
     F2: Callable<(F1::Output,)>,

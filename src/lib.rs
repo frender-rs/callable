@@ -17,16 +17,18 @@ mod maybe_handle_event;
 pub use maybe_handle_event::*;
 
 mod sealed {
-    pub trait Tuple {}
+    pub trait Sealed {}
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct HkFn<F>(F);
+mod private {
+    #[derive(Debug, Clone, Copy)]
+    pub struct HkFn<F>(pub(crate) F);
+}
 
 #[cfg(feature = "impl_with_macro_rules")]
 mod imp {
     mod macros;
-    macros::impl_with_macro_rules!(a1: A1, a2: A2, a3: A3);
+    macros::impl_with_macro_rules!(a1: A1, a2: A2, a3: A3, a4: A4);
 }
 
 #[cfg(not(feature = "impl_with_macro_rules"))]
@@ -43,13 +45,13 @@ macro_rules! ArgumentTypes {
         $resolved
     };
     ($(@($($resolved:tt)*))? &mut $t:ty $(, $($rest:tt)*)? ) => {
-        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::argument::ByMut<$t>,) $($rest)* }
+        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::argument::ByMut<$t>,) $($($rest)*)? }
     };
     ($(@($($resolved:tt)*))? &    $t:ty $(, $($rest:tt)*)? ) => {
-        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::argument::ByRef<$t>,) $($rest)* }
+        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::argument::ByRef<$t>,) $($($rest)*)? }
     };
     ($(@($($resolved:tt)*))?      $t:ty $(, $($rest:tt)*)? ) => {
-        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::argument::Value<$t>,) $($rest)* }
+        $crate::ArgumentTypes! { @($($($resolved)*)? $crate::argument::Value<$t>,) $($($rest)*)? }
     };
 }
 
@@ -76,24 +78,29 @@ mod tests {
         let _: fn() = callable(|| {});
 
         let _: fn(()) = crate::value(|()| {});
-        let _: crate::HkFn<fn(&())> = crate::r#ref(|&()| {});
-        let _: crate::HkFn<fn(&mut ())> = crate::r#mut(|&mut ()| {});
+        let _: callable![fn(&())] = crate::r#ref(|&()| {});
+        let _: callable![fn(&mut ())] = crate::r#mut(|&mut ()| {});
 
         let _: fn((), ()) = crate::value::value(|(), ()| {});
         let _: crate::value::HkFn<fn((), &())> = crate::value::r#ref(|(), &()| {});
     }
 }
 
-pub use prelude::callable as new;
-
-pub mod prelude {
-    pub use crate::{Callable, CallableWithFixedArguments, CallableOne, IsCallable};
-
-    pub use super::callable;
-    pub use crate as callable;
-    pub fn callable<Out>(f: fn() -> Out) -> fn() -> Out {
+mod fn_pointer_fn {
+    #[allow(non_snake_case)]
+    pub fn FnPointer<Out>(f: fn() -> Out) -> fn() -> Out {
         f
     }
+}
+pub use fn_pointer_fn::FnPointer;
+pub type FnPointer<Out> = fn() -> Out;
+
+pub mod prelude {
+    pub use crate::{ArgumentTypes, Callable, CallableOne, CallableWithFixedArguments, IsCallable};
+
+    pub use crate as callable;
+    pub use crate::callable;
+    pub use crate::fn_pointer_fn::FnPointer as callable;
 }
 
 #[doc(hidden)]
@@ -170,6 +177,10 @@ impl_callable_parse_input! { $
     [$_input:tt :   $_input_ty:ty][$input:tt :   $input_ty:ty] => value[$input : $input_ty]
 }
 
+/// ```
+/// use callable::callable;
+/// let _: callable![fn(&mut _)] = callable![fn(&mut _)](|_: &mut u8| {});
+/// ```
 #[macro_export]
 macro_rules! callable {
     (|| $($rest:tt)*) => {
@@ -178,28 +189,28 @@ macro_rules! callable {
     (|  $($rest:tt)* ) => {
         $crate::__callable_parse_input! { [$($rest)*][$($rest)*]{}{} }
     };
-    ($e:expr , fn($($args:tt)*) $(-> $output:ty)?) => {
-        $crate::__callable_wrap_fn! { [$($args)*]{}{}($e){$($output)?} }
+    (fn($($args:tt)*) $(-> $output:ty)?) => {
+        $crate::__fn_pointer! { [$($args)*]{}{}{$($output)?} }
     };
 }
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! __callable_wrap_fn {
-    ([                             ]{$($path:ident)*}{$($generics:tt)*}($e:expr){$output_ty:ty} ) => {
-        $crate::callable $(:: $path)* ::<$($generics)* $output_ty> ($e)
+macro_rules! __fn_pointer {
+    ([                             ]{$($path:ident)*}{$($generics:tt)*}{$output_ty:ty} ) => {
+        $crate $(:: $path)* ::FnPointer::<$($generics)* $output_ty>
     };
-    ([                             ]{$($path:ident)*}{$($generics:tt)*}($e:expr){             } ) => {
-        $crate::callable $(:: $path)* ::<$($generics)* _         > ($e)
+    ([                             ]{$($path:ident)*}{$($generics:tt)*}{             } ) => {
+        $crate $(:: $path)* ::FnPointer::<$($generics)* ()        >
     };
-    ([&mut $t:ty $(, $($rest:tt)*)?]{$($path:ident)*}{$($generics:tt)*} $e:tt    $output_ty:tt  ) => {
-        $crate::__callable_wrap_fn! { [$($($rest)*)?]{$($path)* r#mut}{$t,} $e $output_ty }
+    ([&mut $t:ty $(, $($rest:tt)*)?]{$($path:ident)*}{$($generics:tt)*} $output_ty:tt  ) => {
+        $crate::__fn_pointer! { [$($($rest)*)?]{$($path)* r#mut}{$t,} $output_ty }
     };
-    ([&    $t:ty $(, $($rest:tt)*)?]{$($path:ident)*}{$($generics:tt)*} $e:tt    $output_ty:tt  ) => {
-        $crate::__callable_wrap_fn! { [$($($rest)*)?]{$($path)* r#ref}{$t,} $e $output_ty }
+    ([&    $t:ty $(, $($rest:tt)*)?]{$($path:ident)*}{$($generics:tt)*} $output_ty:tt  ) => {
+        $crate::__fn_pointer! { [$($($rest)*)?]{$($path)* r#ref}{$t,} $output_ty }
     };
-    ([     $t:ty $(, $($rest:tt)*)?]{$($path:ident)*}{$($generics:tt)*} $e:tt    $output_ty:tt  ) => {
-        $crate::__callable_wrap_fn! { [$($($rest)*)?]{$($path)* value}{$t,} $e $output_ty }
+    ([     $t:ty $(, $($rest:tt)*)?]{$($path:ident)*}{$($generics:tt)*} $output_ty:tt  ) => {
+        $crate::__fn_pointer! { [$($($rest)*)?]{$($path)* value}{$t,} $output_ty }
     };
 }
 

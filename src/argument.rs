@@ -147,9 +147,8 @@ mod last {
             F: super::super::CallableWithFixedArguments<Output = Out>,
             A: ProvideArgument<ProvideArgumentType = <F::FixedArgumentTypes as ArgumentTypes>::Last>,
         >
-        crate::Callable<
-            ArgumentsOfTypes<'_, <F::FixedArgumentTypes as ArgumentTypes>::LastTrimmed>,
-        > for LastArgumentProvided<F, A>
+        crate::Callable<ArgumentsOfTypes<'_, <F::FixedArgumentTypes as ArgumentTypes>::LastTrimmed>>
+        for LastArgumentProvided<F, A>
     {
         type Output = Out;
 
@@ -222,7 +221,7 @@ mod first {
 }
 
 pub trait Arguments<'a>: 'static {
-    type Arguments: super::sealed::Tuple;
+    type Arguments: super::Tuple;
 }
 
 pub trait PrependArgument<Arg: ArgumentType>: ArgumentTypes {
@@ -243,7 +242,7 @@ pub trait AppendArgument<Arg: ArgumentType>: ArgumentTypes {
     ) -> ArgumentsOfTypes<'a, Self::Appended>;
 }
 
-pub trait ArgumentTypes: super::sealed::Tuple + for<'a> Arguments<'a> {
+pub trait ArgumentTypes: super::Tuple + for<'a> Arguments<'a> {
     type First: ArgumentType;
     type FirstTrimmed: ArgumentTypes + PrependArgument<Self::First, Prepended = Self>;
 
@@ -284,7 +283,8 @@ impl ArgumentType for Invalid {
 
 pub enum InvalidTuple {}
 
-impl super::sealed::Tuple for InvalidTuple {}
+impl super::sealed::Sealed for InvalidTuple {}
+impl super::Tuple for InvalidTuple {}
 
 impl<'a> Arguments<'a> for InvalidTuple {
     type Arguments = InvalidTuple;

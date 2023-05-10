@@ -56,7 +56,8 @@ macro_rules! impl_fn {
     };
     (*[$($item:tt)*][]) => {};
     (![$({$v:ident $tp:ident})*] $more:tt) => {
-        impl<$($tp,)*> crate::sealed::Tuple for ($($tp,)*) {}
+        impl<$($tp,)*> crate::sealed::Sealed for ($($tp,)*) {}
+        impl<$($tp,)*> crate::Tuple for ($($tp,)*) {}
         impl<'arg, $($tp: crate::argument::ArgumentType,)*> crate::argument::Arguments<'arg> for ($($tp,)*) {
             type Arguments = ($(crate::argument::ArgumentOfType<'arg, $tp>,)*);
         }
@@ -117,12 +118,17 @@ macro_rules! impl_fn {
         }
         ][] }
 
-        impl<$($tp,)* Out> crate::Callable<($($tp,)*)> for fn($($tp),*) -> Out {
+        impl<$($tp,)* Out> crate::IsCallable                 for fn($($tp),*) -> Out {
+        }
+        impl<$($tp,)* Out> crate::Callable<($($tp,)*)>       for fn($($tp),*) -> Out {
             type Output = Out;
 
             fn call_fn(&self, ($($v,)*): ($($tp,)*)) -> Self::Output {
                 self($($v),*)
             }
+        }
+        impl<$($tp: 'static,)* Out> crate::CallableWithFixedArguments for fn($($tp),*) -> Out {
+            type FixedArgumentTypes = ($(crate::argument::Value<$tp>,)*);
         }
     };
 }
@@ -167,22 +173,24 @@ macro_rules! impl_one_resolved {
         more_tps!   { $more:tt }
         fn_expr!    { |$self_ident:ident| $fn_expr:expr }
     ) => {
-        pub fn $fn_name<$($all_tp $(: $($all_tp_bounds)+)?,)* Out>(f: $fn_type) -> $fn_wrapped {
-            $crate::imp::macros::expand_if_else![[$($fn_wrap)*][
-                $($fn_wrap)* (f)
-            ][
-                f
-            ]]
-        }
+        pub use $fn_name::fn_pointer::FnPointer as $fn_name;
 
         $crate::imp::macros::expand_if_else! { [$($should_impl)?][
+        impl<$($all_tp $(: $($all_tp_bounds)+)?,)* Out> crate::IsCallable for $fn_wrapped {
+        }
+
         impl<$($all_tp $(: $($all_tp_bounds)+)?,)* Out> crate::Callable<($($($all_t)* $all_tp,)*)> for $fn_wrapped {
             type Output = Out;
 
-            fn call_fn(&self, ($($all_tp,)*): ($($($all_t)* $all_tp,)*)) -> Self::Output {
+            fn call_fn(&self, #[allow(non_snake_case)] ($($all_tp,)*): ($($($all_t)* $all_tp,)*)) -> Self::Output {
                 self.0($($all_tp),*)
             }
         }
+
+        impl<$($all_tp :'static $(+ $($all_tp_bounds)+)?,)* Out> crate::CallableWithFixedArguments for $fn_wrapped {
+            type FixedArgumentTypes   = ($(crate::imp::macros::argument_type![$($all_t)* $all_tp],)*);
+        }
+
         impl<$($all_tp $(: $($all_tp_bounds)+)?,)* Out> PartialEq for $fn_wrapped {
             fn eq(&self, other: &Self) -> bool {
                 self.0 as usize == other.0 as usize
@@ -190,10 +198,29 @@ macro_rules! impl_one_resolved {
         }
         ][] }
 
-        impl<$($all_tp $(: $($all_tp_bounds)+)?,)* Out> crate::IsCallable for $fn_wrapped {
-        }
-
         pub mod $fn_name {
+            pub(super) mod fn_pointer {
+                #[allow(unused_imports)]
+                use super::super::*;
+                #[allow(non_snake_case)]
+                pub fn FnPointer<$($all_tp $(: $($all_tp_bounds)+)?,)* Out>(f: $fn_type) -> $fn_wrapped {
+                    $crate::imp::macros::expand_if_else![[$($fn_wrap)*][
+                        $($fn_wrap)* (f)
+                    ][
+                        f
+                    ]]
+                }
+            }
+
+            mod fn_pointer_type {
+                #[allow(unused_imports)]
+                use super::super::*;
+                pub type FnPointer<$($all_tp,)* Out> = $fn_wrapped;
+            }
+
+            pub use fn_pointer::FnPointer;
+            pub use fn_pointer_type::FnPointer;
+
             crate::imp::macros::expand_if_ident_is_else! { r#ref $fn_name [
             mod provide_last_argument {
                 use super::super::HkFn;
@@ -226,10 +253,6 @@ macro_rules! impl_one_resolved {
                 ($({[$($all_t)*] $all_tp {$($($all_tp_bounds)+)?}})*) @$more
             }
             ][]}
-        }
-
-        impl<$($all_tp :'static $(+ $($all_tp_bounds)+)?,)* Out> crate::CallableWithFixedArguments for $fn_wrapped {
-            type FixedArgumentTypes   = ($(crate::imp::macros::argument_type![$($all_t)* $all_tp],)*);
         }
     };
 }
@@ -283,7 +306,7 @@ pub(super) use impl_all;
 
 macro_rules! impl_with_macro_rules {
     ($($v:ident : $tp:ident),* $(,)?) => {
-        use super::HkFn;
+        use super::private::HkFn;
         crate::imp::macros::impl_fn!([][$({$v $tp})*]);
         crate::imp::macros::impl_all! {()@[$($tp)*]}
     };

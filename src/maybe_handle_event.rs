@@ -4,7 +4,7 @@ use crate::{Callable, IsCallable};
 pub enum NeverCalled {}
 
 impl IsCallable for NeverCalled {}
-impl<Args: super::sealed::Tuple> Callable<Args> for NeverCalled {
+impl<Args: super::Tuple> Callable<Args> for NeverCalled {
     type Output = ();
 
     fn call_fn(&self, _: Args) -> Self::Output {

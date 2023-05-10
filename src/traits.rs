@@ -1,5 +1,29 @@
 use super::{argument::ProvideArgument, *};
 
+/// This trait is [sealed]
+/// and only implemented for tuples (with max 4 elements).
+///
+/// ```
+/// # use callable::Tuple;
+/// # type A = u8; type B = String; type C = &'static str; type D = Vec<u8>;
+/// # fn assert() where
+/// (A, B, C, D): Tuple
+/// # {} assert()
+/// ```
+///
+/// Tuple with more than 4 elements doesn't implement [`Tuple`].
+///
+/// ```compile_fail
+/// # use callable::Tuple;
+/// # type A = u8; type B = String; type C = &'static str; type D = Vec<u8>;
+/// # type E = i8;
+/// # fn assert() where
+/// (A, B, C, D, E): Tuple
+/// # {}
+/// ```
+/// [sealed]: https://rust-lang.github.io/api-guidelines/future-proofing.html#sealed-traits-protect-against-downstream-implementations-c-sealed
+pub trait Tuple: sealed::Sealed {}
+
 pub trait IsCallable {
     fn accept_anything(self) -> accept_anything::AcceptAnything<Self>
     where
@@ -145,9 +169,15 @@ pub trait IsCallable {
 ///
 /// Note that `fn(&IN) -> Out` doesn't implement `for<'input> CallableOne<&'input IN, Output = Out>`
 /// due to limitations of higher kind types in rust.
-pub trait CallableOne<IN>: Callable<(IN,)> {
-    // type Output;
+pub trait Callable<Args: Tuple>: crate::IsCallable {
+    type Output;
 
+    fn call_fn(&self, args: Args) -> Self::Output;
+}
+
+/// A *trait alias* for [`Callable`] with exactly one argument.
+pub trait CallableOne<IN>: Callable<(IN,)> {
+    /// A shortcut for [`Callable::call_fn`] with exactly one argument.
     fn emit(&self, input: IN) -> Self::Output {
         self.call_fn((input,))
     }
@@ -162,10 +192,10 @@ pub trait CallableOne<IN>: Callable<(IN,)> {
     /// Provide input with another callable.
     ///
     /// ```
-    /// # use callable::{callable, CallableOne, CallableOneExt};
-    /// let plus_1 = callable(|v: i32| v + 1);
+    /// # use callable::prelude::*;
+    /// let plus_1 = callable!(|v: i32| v + 1);
     /// let plus_2 = plus_1.reform(plus_1);
-    /// let plus_4 = plus_2.reform(callable(|v| v + 2));
+    /// let plus_4 = plus_2.reform(callable!(|v| v + 2));
     ///
     /// assert_eq!(plus_1.emit(1), 2);
     /// assert_eq!(plus_2.emit(1), 3);
@@ -188,30 +218,40 @@ pub trait CallableOne<IN>: Callable<(IN,)> {
         chain::Chain(f, self)
     }
 
-    // fn reform_mut<NewInput, F: for<'input> CallableOne<&'input mut NewInput, Output = IN>>(
-    //     self,
-    //     f: F,
-    // ) -> Chain<F, Self> {
-    //     f.chain(self)
-    // }
+    fn reform_mut<NewInput, F: for<'input> CallableOne<&'input mut NewInput, Output = IN>>(
+        self,
+        f: F,
+    ) -> chain::Chain<F, Self>
+    where
+        Self: Sized,
+    {
+        chain::Chain(f, self)
+    }
 }
 
 impl<A1, F: Callable<(A1,)>> crate::CallableOne<A1> for F {}
 
-pub trait Callable<Args: sealed::Tuple>: crate::IsCallable {
-    type Output;
-
-    fn call_fn(&self, args: Args) -> Self::Output;
-}
-
+/// A [`Callable`] which has no overloading.
+///
+/// For example:
+///
+/// ```
+/// # use callable::prelude::*;
+/// # macro_rules! assert_impl { ($($where_clause:tt)+) => { const _: fn() = {
+/// #    fn assert() where $($where_clause)+ {} || assert()
+/// # }; } }
+/// # assert_impl! {
+/// fn() -> usize : CallableWithFixedArguments<FixedArgumentTypes = ArgumentTypes!(), Output = usize>,
+/// fn(u8) -> i16 : CallableWithFixedArguments<FixedArgumentTypes = ArgumentTypes!(u8), Output = i16>,
+/// callable::HkFn<fn(&str) -> String> : CallableWithFixedArguments<FixedArgumentTypes = ArgumentTypes!(&str), Output = String>,
+/// callable::HkFn<fn(&str, &str) -> String> : CallableWithFixedArguments<FixedArgumentTypes = ArgumentTypes!(&str, &str), Output = String>,
+/// # }
+/// ```
 pub trait CallableWithFixedArguments:
     IsCallable
     + for<'a> crate::Callable<super::argument::ArgumentsOfTypes<'a, Self::FixedArgumentTypes>>
 {
     type FixedArgumentTypes: argument::ArgumentTypes;
-    // type LastArgumentProvided: CallableWithFixedArguments<
-    //     FixedArgumentTypes = <Self::FixedArgumentTypes as argument::ArgumentTypes>::LastTrimmed,
-    // >;
 
     fn call_with_prepended_args<'first: 'out, 'args: 'out, 'out>(
         &self,
@@ -250,9 +290,4 @@ pub trait CallableWithFixedArguments:
             <Self::FixedArgumentTypes as argument::ArgumentTypes>::from_appended(args, last),
         )
     }
-}
-
-impl<Out> IsCallable for fn() -> Out {}
-impl<Out> CallableWithFixedArguments for fn() -> Out {
-    type FixedArgumentTypes = ();
 }
