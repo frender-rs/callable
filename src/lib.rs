@@ -1,8 +1,12 @@
 //!
 //! ```
-//! # use callable::*;
-//! let callable = crate::r#ref(u8::clone).with_input_ref(8);
-//! assert_eq!(callable.emit(()), 8u8);
+//! # use callable::prelude::*;
+//! let callable = callable![fn(&_) -> _](u8::clone);
+//! assert_eq!(callable.call_fn((&1,)), 1);
+//! assert_eq!(callable.emit(&2), 2);
+//!
+//! let callable = callable.provide_first_argument_refed(3);
+//! assert_eq!(callable.call_fn(()), 3);
 //! ```
 
 mod traits;
@@ -12,6 +16,7 @@ pub mod accept_anything;
 pub mod chain;
 
 pub mod argument;
+pub use argument::{ArgumentOfType, ArgumentType, ArgumentTypes, ArgumentsOfTypes};
 
 mod maybe_handle_event;
 pub use maybe_handle_event::*;
@@ -111,12 +116,13 @@ mod fn_pointer_fn {
 pub use fn_pointer_fn::FnPointer;
 pub type FnPointer<Out> = fn() -> Out;
 
+pub use fn_pointer_fn::FnPointer as callable;
+
 pub mod prelude {
     pub use crate::{ArgumentTypes, Callable, CallableOne, CallableWithFixedArguments, IsCallable};
 
     pub use crate as callable;
     pub use crate::callable;
-    pub use crate::fn_pointer_fn::FnPointer as callable;
 }
 
 #[doc(hidden)]
@@ -195,6 +201,7 @@ impl_callable_parse_input! { $
 
 /// ```
 /// use callable::callable;
+/// let _: callable![fn() -> u8] = || 1;
 /// let _: callable![fn(&mut _)] = callable![fn(&mut _)](|_: &mut u8| {});
 /// ```
 #[macro_export]
@@ -252,20 +259,20 @@ macro_rules! __callable_input_resolved {
 macro_rules! __callable_all_resolved {
     // no   state
     ([{$($method_path:tt)*}{$([$($input:tt)*])*}][$($output:ty)?][$($body:tt)*]) => {
-        $crate::callable $(::$method_path)*                                (
+        $crate $(::$method_path)* ::FnPointer                    (
             |$($($input)*),*               | $(-> $output)? $($body)*
         )
     };
     // one  state
     ([{$($method_path:tt)*}{$([$($input:tt)*])*}][$($output:ty)?][$($body:tt)*]   $state:ident $(= $state_expr:expr)?    $(,)?) => {
-        $crate::callable $(::$method_path)* ::r#ref::provide_last_argument (
+        $crate $(::$method_path)* ::r#ref::provide_last_argument (
             |$($($input)* ,)* $state       | $(-> $output)? $($body)* ,
             $crate::__expand_or!([$($state_expr)?] $state),
         )
     };
     // many states
     ([{$($method_path:tt)*}{$([$($input:tt)*])*}][$($output:ty)?][$($body:tt)*] $($state:ident $(= $state_expr:expr)?),+ $(,)?) => {
-        $crate::callable $(::$method_path)* ::r#ref::provide_last_argument (
+        $crate $(::$method_path)* ::r#ref::provide_last_argument (
             |$($($input)* ,)* ($($state,)+)| $(-> $output)? $($body)* ,
             ($( $crate::__expand_or!([$($state_expr)?] $state) ,)+),
         )
