@@ -28,9 +28,9 @@ pub trait ProvideArgument {
     ) -> Out;
 }
 
-pub struct Value<T>(PhantomData<T>);
-pub struct ByRef<T: ?Sized>(PhantomData<T>);
-pub struct ByMut<T: ?Sized>(PhantomData<T>);
+pub struct Value<T>(PhantomData<T>, Invalid);
+pub struct ByRef<T: ?Sized>(PhantomData<T>, Invalid);
+pub struct ByMut<T: ?Sized>(PhantomData<T>, Invalid);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Copied<T: Copy>(pub(super) T);
