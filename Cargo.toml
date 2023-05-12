@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 
 [features]
-default = ["impl_with_macro_rules"]
+# default = ["impl_with_macro_rules"]
 impl_with_macro_rules = []
