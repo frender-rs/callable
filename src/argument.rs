@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 pub use first::FirstArgumentProvided;
 pub use last::LastArgumentProvided;
