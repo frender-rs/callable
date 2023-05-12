@@ -227,13 +227,13 @@ macro_rules! __fn_pointer {
         $crate $(:: $path)* ::FnPointer::<$($generics)* ()        >
     };
     ([&mut $t:ty $(, $($rest:tt)*)?]{$($path:ident)*}{$($generics:tt)*} $output_ty:tt  ) => {
-        $crate::__fn_pointer! { [$($($rest)*)?]{$($path)* r#mut}{$t,} $output_ty }
+        $crate::__fn_pointer! { [$($($rest)*)?]{$($path)* r#mut}{$($generics)* $t,} $output_ty }
     };
     ([&    $t:ty $(, $($rest:tt)*)?]{$($path:ident)*}{$($generics:tt)*} $output_ty:tt  ) => {
-        $crate::__fn_pointer! { [$($($rest)*)?]{$($path)* r#ref}{$t,} $output_ty }
+        $crate::__fn_pointer! { [$($($rest)*)?]{$($path)* r#ref}{$($generics)* $t,} $output_ty }
     };
     ([     $t:ty $(, $($rest:tt)*)?]{$($path:ident)*}{$($generics:tt)*} $output_ty:tt  ) => {
-        $crate::__fn_pointer! { [$($($rest)*)?]{$($path)* value}{$t,} $output_ty }
+        $crate::__fn_pointer! { [$($($rest)*)?]{$($path)* value}{$($generics)* $t,} $output_ty }
     };
 }
 
