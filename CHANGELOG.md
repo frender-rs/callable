@@ -1,0 +1,17 @@
+# Changelog
+
+## 0.1.0 (2023-05-12)
+
+
+### Features
+
+* disable impl_with_macro_rules by default ([e007818](https://github.com/frender-rs/callable/commit/e0078189ceb2a851df9befc4cefc9f4ff7ae7286))
+* macro ArgumentType ([995ac66](https://github.com/frender-rs/callable/commit/995ac66f938c46ad9c592e7566030124ff4a8dd7))
+* make argument types un-constructable ([8f79c40](https://github.com/frender-rs/callable/commit/8f79c40a5e88715b1c7c1be1002508d1564da976))
+* no_std ([f31f63b](https://github.com/frender-rs/callable/commit/f31f63be6d281f038bf41a3dff0eb54c376cf191))
+* remove `'static` bounds for argument types ([6a828d1](https://github.com/frender-rs/callable/commit/6a828d1bb8b6a34107b19f5cc669bd4ece1e51f6))
+
+
+### Bug Fixes
+
+* callable![fn(_, _)] not working ([6a92f1c](https://github.com/frender-rs/callable/commit/6a92f1ce2f4658dfaba6e2b511b5cb4775aac0ed))
