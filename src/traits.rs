@@ -161,9 +161,9 @@ pub trait IsCallable {
 /// ```
 ///
 /// ```
-/// # use callable::{CallableOne, HkFn};
+/// # use callable::{CallableOne, callable};
 /// # fn assert<IN, Out>() where
-/// HkFn<fn(&IN) -> Out> : for<'input> CallableOne<&'input IN, Output = Out>
+/// callable![fn(&IN) -> Out] : for<'input> CallableOne<&'input IN, Output = Out>
 /// # {} assert::<String, usize>()
 /// ```
 ///
@@ -243,8 +243,8 @@ impl<A1, F: Callable<(A1,)>> crate::CallableOne<A1> for F {}
 /// # assert_impl! {
 /// fn() -> usize : CallableWithFixedArguments<FixedArgumentTypes = ArgumentTypes!(), Output = usize>,
 /// fn(u8) -> i16 : CallableWithFixedArguments<FixedArgumentTypes = ArgumentTypes!(u8), Output = i16>,
-/// callable::HkFn<fn(&str) -> String> : CallableWithFixedArguments<FixedArgumentTypes = ArgumentTypes!(&str), Output = String>,
-/// callable::HkFn<fn(&str, &str) -> String> : CallableWithFixedArguments<FixedArgumentTypes = ArgumentTypes!(&str, &str), Output = String>,
+/// callable![fn(&str) -> String] : CallableWithFixedArguments<FixedArgumentTypes = ArgumentTypes!(&str), Output = String>,
+/// callable![fn(&str, &str) -> String] : CallableWithFixedArguments<FixedArgumentTypes = ArgumentTypes!(&str, &str), Output = String>,
 /// # }
 /// ```
 pub trait CallableWithFixedArguments:
