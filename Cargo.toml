@@ -2,6 +2,9 @@
 name = "callable"
 version = "0.1.0"
 edition = "2021"
+description = "callable closures implementing PartialEq and argument operations"
+license = "MIT"
+repository = "https://github.com/frender-rs/callable"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
