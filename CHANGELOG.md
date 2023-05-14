@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0](https://github.com/frender-rs/callable/compare/v0.1.0...v0.2.0) (2023-05-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* `MaybeHandleEvent` now requires `Self::Callable::Output` to be `()`
+
+### Features
+
+* `MaybeHandleEvent` now requires `Self::Callable::Output` to be `()` ([06c6c79](https://github.com/frender-rs/callable/commit/06c6c79c06ecc3703cae4ea0a0b3d220a868ee4c))
+
 ## 0.1.0 (2023-05-12)
 
 
