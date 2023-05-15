@@ -16,9 +16,9 @@ pub trait StatedEvent {
     type State;
 }
 
-pub trait MaybeHandleEvent<E: ?Sized + StatedEvent>: PartialEq {
+pub trait MaybeHandleEvent<E: ?Sized + StatedEvent> {
     type State;
-    type Callable: Clone + for<'e> Callable<(&'e E,), Output = ()>;
+    type Callable: for<'e> Callable<(&'e E,)>;
 
     fn initialize_handle_event_state(
         this: Self,
@@ -50,9 +50,7 @@ impl<E: ?Sized + StatedEvent> MaybeHandleEvent<E> for () {
     }
 }
 
-impl<E: ?Sized + StatedEvent, C: PartialEq + Clone + for<'e> Callable<(&'e E,), Output = ()>>
-    MaybeHandleEvent<E> for C
-{
+impl<E: ?Sized + StatedEvent, C: PartialEq + for<'e> Callable<(&'e E,)>> MaybeHandleEvent<E> for C {
     type State = (E::State, C);
     type Callable = C;
 
