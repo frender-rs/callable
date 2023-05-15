@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/frender-rs/callable/compare/v0.2.0...v0.3.0) (2023-05-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* relax bounds of `MaybeHandleEvent`
+
+### Features
+
+* relax bounds of `MaybeHandleEvent` ([19f536f](https://github.com/frender-rs/callable/commit/19f536f4fdba07c94c04043bbbba0c292c73cdb8))
+
 ## [0.2.0](https://github.com/frender-rs/callable/compare/v0.1.0...v0.2.0) (2023-05-14)
 
 
