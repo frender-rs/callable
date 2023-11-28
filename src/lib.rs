@@ -23,6 +23,9 @@ pub use argument::{ArgumentOfType, ArgumentType, ArgumentTypes, ArgumentsOfTypes
 mod maybe_handle_event;
 pub use maybe_handle_event::*;
 
+#[cfg(feature = "gat")]
+pub mod gat;
+
 mod sealed {
     pub trait Sealed {}
 }
