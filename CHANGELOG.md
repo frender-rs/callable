@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/frender-rs/callable/compare/v0.3.0...v0.4.0) (2023-11-28)
+
+
+### Features
+
+* feature gat ([cf90660](https://github.com/frender-rs/callable/commit/cf90660d12c755da6b216bcfefb8397e8efd859b))
+
 ## [0.3.0](https://github.com/frender-rs/callable/compare/v0.2.0...v0.3.0) (2023-05-15)
 
 
