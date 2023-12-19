@@ -222,7 +222,7 @@ pub trait CallableOne<IN>: Callable<(IN,)> {
         f.chain(self)
     }
 
-    fn reform_ref<NewInput, F: for<'i> CallableOne<&'i NewInput, Output = IN>>(
+    fn reform_ref<NewInput: ?Sized, F: for<'i> CallableOne<&'i NewInput, Output = IN>>(
         self,
         f: F,
     ) -> chain::Chain<F, Self>
@@ -232,7 +232,7 @@ pub trait CallableOne<IN>: Callable<(IN,)> {
         chain::Chain(f, self)
     }
 
-    fn reform_mut<NewInput, F: for<'input> CallableOne<&'input mut NewInput, Output = IN>>(
+    fn reform_mut<NewInput: ?Sized, F: for<'input> CallableOne<&'input mut NewInput, Output = IN>>(
         self,
         f: F,
     ) -> chain::Chain<F, Self>
