@@ -42,6 +42,9 @@ pub struct Cloned<T: Clone>(pub(super) T);
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Refed<T>(pub(super) T);
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct With<Cbk>(pub(super) Cbk);
+
 impl<'a, T> Argument<'a> for Value<T> {
     type Argument = T;
 }
@@ -122,6 +125,20 @@ impl<T> ProvideArgument for Refed<T> {
         f: F,
     ) -> Out {
         f(&self.0)
+    }
+}
+
+impl<Arg, Cbk: crate::Callable<(), Output = Arg>> ProvideArgument for With<Cbk> {
+    type ProvideArgumentType = Value<Arg>;
+
+    fn provide_argument_to<
+        Out,
+        F: for<'arg> FnOnce(ArgumentOfType<'arg, Self::ProvideArgumentType>) -> Out,
+    >(
+        &self,
+        f: F,
+    ) -> Out {
+        f(self.0.call_fn(()))
     }
 }
 

@@ -146,6 +146,36 @@ pub trait IsCallable {
             first_argument: argument::Cloned(first_argument),
         }
     }
+
+    fn provide_first_argument_with<F: Callable<()>>(
+        self,
+        get_first_argument: F,
+    ) -> super::argument::FirstArgumentProvided<Self, argument::With<F>>
+    where
+        Self: Sized + CallableWithFixedArguments,
+        Self::FixedArgumentTypes:
+            argument::ArgumentTypes<First = argument::Value<<F as Callable<()>>::Output>>,
+    {
+        super::argument::FirstArgumentProvided {
+            f: self,
+            first_argument: argument::With(get_first_argument),
+        }
+    }
+
+    fn provide_last_argument_with<F: Callable<()>>(
+        self,
+        get_first_argument: F,
+    ) -> super::argument::LastArgumentProvided<Self, argument::With<F>>
+    where
+        Self: Sized + CallableWithFixedArguments,
+        Self::FixedArgumentTypes:
+            argument::ArgumentTypes<Last = argument::Value<<F as Callable<()>>::Output>>,
+    {
+        super::argument::LastArgumentProvided {
+            f: self,
+            last_argument: argument::With(get_first_argument),
+        }
+    }
 }
 
 /// Anything implementing CallableOne has the following traits:
