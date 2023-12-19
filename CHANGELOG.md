@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.0](https://github.com/frender-rs/callable/compare/v0.4.0...v0.5.0) (2023-12-19)
+
+
+### Features
+
+* `IsCallable::provide_first_argument_cloned` ([173aeb3](https://github.com/frender-rs/callable/commit/173aeb3c2c2573165388e66403e091f8490d7f5a))
+* provide argument with ([8a30df8](https://github.com/frender-rs/callable/commit/8a30df88e9c476f53c0a744233d755fd378ed268))
+* relax bounds for `reform_ref` and `reform_mut` in `CallableOne` ([c55a7d8](https://github.com/frender-rs/callable/commit/c55a7d8750edb396a58542202675647cf8bf76e4))
+
 ## [0.4.0](https://github.com/frender-rs/callable/compare/v0.3.0...v0.4.0) (2023-11-28)
 
 
