@@ -132,6 +132,20 @@ pub trait IsCallable {
             last_argument: argument::Cloned(last_argument),
         }
     }
+
+    fn provide_first_argument_cloned<T: Clone>(
+        self,
+        first_argument: T,
+    ) -> super::argument::FirstArgumentProvided<Self, argument::Cloned<T>>
+    where
+        Self: Sized + CallableWithFixedArguments,
+        Self::FixedArgumentTypes: argument::ArgumentTypes<First = argument::Value<T>>,
+    {
+        super::argument::FirstArgumentProvided {
+            f: self,
+            first_argument: argument::Cloned(first_argument),
+        }
+    }
 }
 
 /// Anything implementing CallableOne has the following traits:
